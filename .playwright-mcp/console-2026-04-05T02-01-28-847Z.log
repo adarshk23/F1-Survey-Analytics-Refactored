@@ -1,0 +1,3 @@
+[     392ms] [ERROR] New element size or position is too large {x: -4194068.481341142, y: -4193927.382058973, width: 86.57347697392106, height: 30.566237086430192, points: undefined} @ http://localhost:3000/assets/index-C1JelwHC.js:64
+[   21736ms] [ERROR] New element size or position is too large {x: -4194068.481341142, y: -4193927.382058973, width: 86.57347697392106, height: 30.566237086430192, points: undefined} @ http://localhost:3000/assets/index-C1JelwHC.js:64
+[   27487ms] [ERROR] New element size or position is too large {x: -4194068.481341142, y: -4193927.382058973, width: 4194389.573476974, height: 4194333.566237086, points: undefined} @ http://localhost:3000/assets/index-C1JelwHC.js:64

@@ -15,7 +15,7 @@ A Python program that captures student responses about Formula 1 (F1) motorsport
 | # | Goal | Description |
 |---|------|-------------|
 | 1 | **Capture Responses** | Run a 10-question multiple-choice survey on F1 topics |
-| 2 | **Authenticate Users** | Gate access using a class code so only valid students participate |
+| 2 | **Identify Students** | Record student name and student ID so each response is traceable |
 | 3 | **Validate Input** | Ensure all responses are valid (A/B/C/D only) |
 | 4 | **Store Results** | Persist survey responses to file (CSV/JSON) so data isn't lost |
 | 5 | **Generate Analytics** | Analyse response patterns — popularity of teams, knowledge levels, viewing habits |
@@ -40,30 +40,30 @@ A Python program that captures student responses about Formula 1 (F1) motorsport
 
 This diagram shows the **classes and their relationships** for the refactored program. The original code is a flat script — this design breaks it into proper objects.
 
+![UML Class Diagram](docs/excalidraw-class-diagram.png)
+
+<details>
+<summary>Mermaid source (click to expand)</summary>
+
 ```mermaid
 classDiagram
     direction TB
 
     class SurveyApp {
-        -authenticator: Authenticator
+        -user: User
         -survey: Survey
         -storage: DataStorage
         -analytics: Analytics
         +run() void
         +show_menu() str
-    }
-
-    class Authenticator {
-        -valid_class_code: str
-        +get_user_details() User
-        +validate_access(class_code: str) bool
+        +get_student_details() User
     }
 
     class User {
         -name: str
-        -class_code: str
+        -student_id: str
         +get_name() str
-        +get_class_code() str
+        +get_student_id() str
     }
 
     class Survey {
@@ -98,22 +98,22 @@ classDiagram
         +display_charts() void
     }
 
-    SurveyApp --> Authenticator : uses
+    SurveyApp --> User : creates
     SurveyApp --> Survey : uses
     SurveyApp --> DataStorage : uses
     SurveyApp --> Analytics : uses
-    Authenticator --> User : creates
     Survey --> Question : contains 1..*
     Analytics --> DataStorage : reads from
 ```
+
+</details>
 
 ### Class Responsibilities
 
 | Class | Responsibility |
 |-------|---------------|
-| **SurveyApp** | Main controller — orchestrates the entire flow (menu, auth, survey, analytics) |
-| **Authenticator** | Handles user identification and class code validation |
-| **User** | Data object holding student name and class code |
+| **SurveyApp** | Main controller — orchestrates the entire flow (welcome, menu, survey, analytics) |
+| **User** | Data object holding student name and student ID |
 | **Survey** | Manages the 10 questions, collects responses, displays results |
 | **Question** | Single question with its text and options; handles input validation |
 | **DataStorage** | Saves/loads survey responses to/from file (CSV or JSON) |
@@ -127,11 +127,15 @@ This diagram shows **how the program flows** from start to finish — the order 
 
 ### Main Flow — Happy Path (User completes survey)
 
+![Sequence Diagram](docs/excalidraw-sequence-diagram.png)
+
+<details>
+<summary>Mermaid source (click to expand)</summary>
+
 ```mermaid
 sequenceDiagram
     actor Student
     participant App as SurveyApp
-    participant Auth as Authenticator
     participant Survey as Survey
     participant Q as Question
     participant Store as DataStorage
@@ -141,20 +145,12 @@ sequenceDiagram
     App->>App: Display title "F1 FORMULA 1 SURVEY"
 
     rect rgb(240, 248, 255)
-        Note over Student, Auth: Authentication Phase
-        App->>Auth: get_user_details()
-        Auth->>Student: Prompt "Enter your name"
-        Student-->>Auth: name
-        Auth->>Student: Prompt "Enter your class"
-        Student-->>Auth: class_code
-        Auth->>Auth: validate_access(class_code)
-        alt Invalid class code
-            Auth-->>App: Access Denied
-            App-->>Student: "Sorry. Access Denied."
-            Note over App: Program exits
-        else Valid class code
-            Auth-->>App: User object created
-        end
+        Note over Student, App: Student Details
+        App->>Student: Prompt "Enter your name"
+        Student-->>App: name
+        App->>Student: Prompt "Enter your student ID"
+        Student-->>App: student_id
+        App->>App: Create User(name, student_id)
     end
 
     rect rgb(245, 255, 245)
@@ -218,11 +214,13 @@ sequenceDiagram
     end
 ```
 
+</details>
+
 ### Sequence Diagram — What It Shows
 
 | Phase | What Happens |
 |-------|-------------|
-| **Authentication** | Student enters name + class code → validated against 11SEG261 |
+| **Student Details** | Student enters name + student ID (no authentication, just identification) |
 | **Menu** | Student picks Continue, Quit, or Restart |
 | **Survey** | 10 questions displayed one-by-one, each answer validated (A/B/C/D only) |
 | **Results** | All answers displayed back to the student for review |
@@ -236,7 +234,7 @@ sequenceDiagram
 
 | Feature | Original Code | Refactored Design |
 |---------|--------------|-------------------|
-| Structure | Flat script, no functions | OOP with 7 classes |
+| Structure | Flat script, no functions | OOP with 6 classes |
 | Data persistence | None (answers lost on exit) | Save to CSV/JSON |
 | Analytics | None | Response distributions, popular picks, summary reports |
 | Input validation | Inline while loops | Encapsulated in Question class |
